@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Bingo 🎉</title>
+<style>
+  /* Offline-safe font stack — no external requests needed */
+</style>
+<style>
+  :root {
+    --bg: #fff9f0;
+    --primary: #ff6b35;
+    --secondary: #ffd166;
+    --accent: #06d6a0;
+    --purple: #7b5ea7;
+    --blue: #118ab2;
+    --card-bg: #ffffff;
+    --card-border: #ffe0c8;
+    --text: #2d2d2d;
+    --muted: #888;
+    --radius: 16px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.10);
+    --font-body: 'Nunito', 'Varela Round', 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    --font-display: 'Baloo 2', 'Chalkboard SE', 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* ── SCREENS ─────────────────────────────────── */
+  .screen { display: none; min-height: 100vh; padding: 20px; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  /* ── SETUP SCREEN ─────────────────────────────── */
+  #setup-screen {
+    justify-content: center;
+    background: linear-gradient(135deg, #fff9f0 0%, #ffe8d6 100%);
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    color: var(--primary);
+    text-align: center;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .logo span { color: var(--purple); }
+
+  .tagline {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    font-weight: 600;
+  }
+
+  .setup-card {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--card-border);
+  }
+
+  .setup-card h2 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--purple);
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: border 0.2s;
+    outline: none;
+  }
+  input[type="text"]:focus { border-color: var(--primary); }
+
+  .name-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .name-row input { flex: 1; }
+
+  .section-divider {
+    border: none;
+    border-top: 2px dashed #eee;
+    margin: 20px 0;
+  }
+
+  .hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  .preset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .preset-btn {
+    background: #fff3e8;
+    border: 2px solid var(--card-border);
+    border-radius: 14px;
+    padding: 12px 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--primary);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .preset-btn:hover { background: var(--secondary); border-color: var(--primary); transform: scale(1.03); }
+  .preset-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
+  .preset-btn .preset-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+  .preset-btn .preset-desc { font-size: 0.7rem; color: inherit; opacity: 0.75; display: block; font-weight: 600; }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    cursor: pointer;
+    margin-top: 22px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 14px rgba(255,107,53,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,53,0.45); }
+  .btn-primary:active { transform: translateY(0); }
+
+
+
+  /* ── BINGO SCREEN ─────────────────────────────── */
+  #game-screen {
+    background: linear-gradient(160deg, #fff9f0 0%, #f0f4ff 100%);
+    padding: 14px 12px 30px;
+    align-items: center;
+  }
+
+  .game-header {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .player-badge {
+    background: var(--purple);
+    color: white;
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.95rem;
+  }
+
+  .score-badge {
+    background: var(--accent);
+    color: white;
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.95rem;
+  }
+
+  .bingo-header-text {
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    color: var(--primary);
+    font-weight: 800;
+  }
+
+  /* BINGO letters row */
+  .bingo-letters {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 6px;
+  }
+  .bingo-letter {
+    background: var(--primary);
+    color: white;
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 4vw, 1.6rem);
+    font-weight: 800;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(255,107,53,0.3);
+  }
+
+  /* BINGO grid */
+  .bingo-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .bingo-cell {
+    aspect-ratio: 1;
+    background: white;
+    border-radius: 14px;
+    border: 2px solid #ffe0c8;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .bingo-cell:hover { transform: scale(1.04); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+
+  .bingo-cell .emoji {
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    line-height: 1;
+  }
+  .bingo-cell .cell-action {
+    font-size: clamp(0.48rem, 1.6vw, 0.68rem);
+    font-weight: 800;
+    color: var(--text);
+    text-align: center;
+    padding: 0 3px;
+    margin-top: 2px;
+    line-height: 1.2;
+  }
+  .bingo-cell .cell-time {
+    font-size: clamp(0.42rem, 1.4vw, 0.6rem);
+    font-weight: 700;
+    color: var(--primary);
+    text-align: center;
+    padding: 0 2px;
+    line-height: 1.1;
+  }
+  /* keep old cell-hint for FREE label */
+  .bingo-cell .cell-hint {
+    font-size: clamp(0.5rem, 1.8vw, 0.72rem);
+    font-weight: 700;
+    color: var(--muted);
+    text-align: center;
+    padding: 0 3px;
+    margin-top: 2px;
+    line-height: 1.2;
+  }
+
+  /* FREE cell */
+  .bingo-cell.free-cell {
+    background: linear-gradient(135deg, var(--secondary), #ffb347);
+    border-color: var(--primary);
+    cursor: default;
+  }
+  .bingo-cell.free-cell .emoji { font-size: clamp(1.6rem, 5vw, 2.4rem); }
+
+  /* STAMPED cell */
+  .bingo-cell.stamped {
+    background: linear-gradient(135deg, #e8faf4, #d0f5e8);
+    border-color: var(--accent);
+  }
+  .bingo-cell.stamped .stamp-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 214, 160, 0.88);
+    border-radius: 12px;
+    animation: stampIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .bingo-cell.stamped .stamp-tick {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    line-height: 1;
+  }
+  .bingo-cell.stamped .stamp-name {
+    font-size: clamp(0.5rem, 1.8vw, 0.7rem);
+    font-weight: 800;
+    color: white;
+    text-align: center;
+    padding: 0 4px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* WINNING LINES */
+  .bingo-cell.winning {
+    animation: pulse-win 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes pulse-win {
+    from { box-shadow: 0 0 0 2px var(--secondary); }
+    to { box-shadow: 0 0 0 6px var(--primary); }
+  }
+
+  @keyframes stampIn {
+    from { transform: scale(0.4) rotate(-15deg); opacity: 0; }
+    to { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  /* ── MODAL ─────────────────────────────────────── */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes modalIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-emoji { font-size: 3rem; text-align: center; display: block; margin-bottom: 10px; }
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--purple);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .modal-phrase {
+    background: #fff3e8;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-align: center;
+    margin-bottom: 8px;
+    border: 2px dashed var(--card-border);
+  }
+  .modal-prompt {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .modal-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .modal-input-row input {
+    flex: 1;
+    padding: 12px 14px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: var(--font-body);
+    outline: none;
+  }
+  .modal-input-row input:focus { border-color: var(--accent); }
+
+  .btn-confirm {
+    padding: 12px 16px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+    white-space: nowrap;
+  }
+  .btn-confirm:hover { transform: scale(1.05); }
+
+  .btn-cancel {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background: none;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .btn-cancel:hover { border-color: #ccc; }
+
+  /* ── WIN SCREEN ───────────────────────────────── */
+  #win-screen {
+    justify-content: center;
+    background: linear-gradient(135deg, #fff3e8, #e8faf4);
+  }
+
+  .win-trophy { font-size: 5rem; text-align: center; margin-bottom: 10px; animation: bounce 0.8s ease infinite alternate; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-14px); } }
+
+  .win-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 8vw, 3rem);
+    color: var(--primary);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .win-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .win-card {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: var(--shadow);
+    border: 2px solid #ffe0c8;
+    margin-bottom: 20px;
+  }
+  .win-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--purple);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  .win-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+  .win-cell {
+    background: #f5f5f5;
+    border-radius: 10px;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text);
+    border: 2px solid transparent;
+  }
+  .win-cell.filled {
+    background: #e8faf4;
+    border-color: var(--accent);
+    color: #026d53;
+  }
+  .win-cell .wc-phrase { font-size: 0.62rem; color: var(--muted); }
+  .win-cell .wc-name { font-size: 0.75rem; color: var(--accent); font-weight: 800; }
+  .win-cell .wc-free { font-size: 1rem; }
+
+  .btn-restart {
+    display: block;
+    width: 100%;
+    max-width: 500px;
+    padding: 16px;
+    background: var(--purple);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(123,94,167,0.35);
+    transition: transform 0.15s;
+  }
+  .btn-restart:hover { transform: translateY(-2px); }
+
+  /* confetti */
+  .confetti-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 200;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    animation: fall linear forwards;
+    border-radius: 2px;
+  }
+  @keyframes fall {
+    to { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* error shake */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  .shake { animation: shake 0.35s ease; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 1: SETUP
+══════════════════════════════════════════ -->
+<div id="setup-screen" class="screen active">
+  <div class="logo">English <span>Bingo</span> 🎲</div>
+  <div class="tagline">Ask your classmates — win the game!</div>
+
+  <div class="setup-card">
+    <h2>👋 Before you play…</h2>
+
+    <label for="player-name">Your name</label>
+    <div class="name-row">
+      <input type="text" id="player-name" placeholder="e.g. Tommy" maxlength="20">
+    </div>
+
+    <hr class="section-divider">
+
+    <label>Choose a topic</label>
+    <div class="preset-grid">
+      <button class="preset-btn" onclick="selectPreset('food', this)">
+        <span class="preset-icon">🍱</span>Food &amp; Drinks
+        <span class="preset-desc">snacks, meals, drinks</span>
+      </button>
+      <button class="preset-btn" onclick="selectPreset('sport', this)">
+        <span class="preset-icon">⚽</span>Sports &amp; Play
+        <span class="preset-desc">games, exercise, fun</span>
+      </button>
+      <button class="preset-btn" onclick="selectPreset('school', this)">
+        <span class="preset-icon">🎒</span>School Life
+        <span class="preset-desc">lessons, friends, study</span>
+      </button>
+      <button class="preset-btn" onclick="selectPreset('home', this)">
+        <span class="preset-icon">🏠</span>Home &amp; Family
+        <span class="preset-desc">chores, family, routines</span>
+      </button>
+      <button class="preset-btn" onclick="selectPreset('weekend', this)">
+        <span class="preset-icon">🎡</span>Weekend Fun
+        <span class="preset-desc">outings, hobbies, treats</span>
+      </button>
+      <button class="preset-btn" onclick="selectPreset('mixed', this)">
+        <span class="preset-icon">🎲</span>Mixed Bag
+        <span class="preset-desc">a bit of everything!</span>
+      </button>
+    </div>
+    <div class="hint" id="preset-hint" style="margin-top:10px; color:#e05a1e;">← Pick a topic first!</div>
+
+    <button class="btn-primary" onclick="startGame()">Let's Play! 🎉</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 2: GAME
+══════════════════════════════════════════ -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <span class="player-badge" id="header-name">Player</span>
+    <span class="bingo-header-text">BINGO!</span>
+    <span class="score-badge" id="score-display">0 / 5</span>
+  </div>
+
+  <div class="bingo-letters">
+    <div class="bingo-letter">B</div>
+    <div class="bingo-letter">I</div>
+    <div class="bingo-letter">N</div>
+    <div class="bingo-letter">G</div>
+    <div class="bingo-letter">O</div>
+  </div>
+
+  <div class="bingo-grid" id="bingo-grid"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 3: WIN
+══════════════════════════════════════════ -->
+<div id="win-screen" class="screen">
+  <div class="win-trophy">🏆</div>
+  <div class="win-title">BINGO! You won!</div>
+  <div class="win-sub" id="win-sub-text">Amazing speaking work!</div>
+
+  <div class="win-card">
+    <h3>📋 Teacher Check — Names on your card</h3>
+    <div class="win-grid" id="win-grid"></div>
+  </div>
+
+  <button class="btn-restart" onclick="resetToSetup()">Play Again 🔄</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: Enter classmate name
+══════════════════════════════════════════ -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <span class="modal-emoji" id="modal-emoji">🍎</span>
+    <div class="modal-title">Ask your classmate:</div>
+    <div class="modal-phrase" id="modal-phrase">Did you eat an apple yesterday?</div>
+    <div class="modal-prompt">If they say <strong>YES</strong>, write their name below!</div>
+    <div class="modal-input-row">
+      <input type="text" id="name-input" placeholder="Classmate's name" maxlength="20" onkeydown="if(event.key==='Enter')confirmName()">
+      <button class="btn-confirm" onclick="confirmName()">✓ OK</button>
+    </div>
+    <button class="btn-cancel" onclick="closeModal()">Not yet — try later</button>
+  </div>
+</div>
+
+<!-- confetti container -->
+<div class="confetti-container" id="confetti-container"></div>
+
+<script>
+// ── PRESET WORD LISTS ──────────────────────────────────────────────
+// Each entry: { action, time, emoji }
+// "action" = verb phrase shown on cell button and used in question
+// "time"   = past time expression shown in brackets
+// Question built as: "Did you [action] [time]?"
+
+const PRESETS = {
+  food: [
+    {action:"eat rice for dinner",       time:"yesterday",   emoji:"🍚"},
+    {action:"drink milk",                time:"this morning",emoji:"🥛"},
+    {action:"eat instant noodles",       time:"last week",   emoji:"🍜"},
+    {action:"have a snack",              time:"yesterday",   emoji:"🍪"},
+    {action:"eat a banana",              time:"yesterday",   emoji:"🍌"},
+    {action:"drink orange juice",        time:"this morning",emoji:"🧃"},
+    {action:"eat bread for breakfast",   time:"this morning",emoji:"🍞"},
+    {action:"have soup",                 time:"last night",  emoji:"🍲"},
+    {action:"eat an egg",                time:"this morning",emoji:"🥚"},
+    {action:"drink water",               time:"just now",    emoji:"💧"},
+    {action:"eat a sandwich",            time:"yesterday",   emoji:"🥪"},
+    {action:"have ice cream",            time:"last weekend",emoji:"🍦"},
+    {action:"eat pizza",                 time:"last week",   emoji:"🍕"},
+    {action:"drink tea",                 time:"yesterday",   emoji:"🍵"},
+    {action:"eat a mango",               time:"last week",   emoji:"🥭"},
+    {action:"have a hotdog",             time:"last month",  emoji:"🌭"},
+    {action:"eat chips",                 time:"yesterday",   emoji:"🍟"},
+    {action:"eat a biscuit",             time:"yesterday",   emoji:"🍘"},
+    {action:"drink chocolate milk",      time:"last week",   emoji:"🍫"},
+    {action:"have fried rice",           time:"last night",  emoji:"🍳"},
+    {action:"eat a fish ball",           time:"yesterday",   emoji:"🐟"},
+    {action:"drink lemon tea",           time:"yesterday",   emoji:"🍋"},
+    {action:"have wonton noodles",       time:"last week",   emoji:"🥣"},
+    {action:"eat pineapple bun",         time:"this morning",emoji:"🧇"}
+  ],
+  sport: [
+    {action:"play football",             time:"yesterday",   emoji:"⚽"},
+    {action:"swim",                      time:"last weekend",emoji:"🏊"},
+    {action:"ride a bicycle",            time:"last weekend",emoji:"🚲"},
+    {action:"play basketball",           time:"yesterday",   emoji:"🏀"},
+    {action:"run in the playground",     time:"yesterday",   emoji:"🏃"},
+    {action:"jump rope",                 time:"yesterday",   emoji:"🪢"},
+    {action:"play badminton",            time:"last week",   emoji:"🏸"},
+    {action:"play table tennis",         time:"last week",   emoji:"🏓"},
+    {action:"do a forward roll",         time:"last week",   emoji:"🤸"},
+    {action:"go for a walk",             time:"last weekend",emoji:"🚶"},
+    {action:"play catch",                time:"yesterday",   emoji:"🫳"},
+    {action:"kick a ball",               time:"yesterday",   emoji:"🦵"},
+    {action:"skip",                      time:"yesterday",   emoji:"🎀"},
+    {action:"do a cartwheel",            time:"last week",   emoji:"🌀"},
+    {action:"do sit-ups",                time:"yesterday",   emoji:"💪"},
+    {action:"play volleyball",           time:"last month",  emoji:"🏐"},
+    {action:"do PE lesson",              time:"yesterday",   emoji:"🧢"},
+    {action:"play in the park",          time:"last weekend",emoji:"🌳"},
+    {action:"throw a frisbee",           time:"last month",  emoji:"🥏"},
+    {action:"climb the monkey bars",     time:"last week",   emoji:"🙉"},
+    {action:"race a friend",             time:"yesterday",   emoji:"🏁"},
+    {action:"do stretching",             time:"this morning",emoji:"🧘"},
+    {action:"go hiking",                 time:"last month",  emoji:"🥾"},
+    {action:"bowl",                      time:"last month",  emoji:"🎳"}
+  ],
+  school: [
+    {action:"do your homework",          time:"last night",  emoji:"📝"},
+    {action:"read a book",               time:"yesterday",   emoji:"📚"},
+    {action:"draw a picture",            time:"yesterday",   emoji:"🎨"},
+    {action:"write in your notebook",    time:"yesterday",   emoji:"✏️"},
+    {action:"answer a question in class",time:"yesterday",   emoji:"🙋"},
+    {action:"borrow a library book",     time:"last week",   emoji:"📖"},
+    {action:"help a classmate",          time:"yesterday",   emoji:"🤝"},
+    {action:"forget your homework",      time:"last week",   emoji:"😬"},
+    {action:"arrive at school early",    time:"yesterday",   emoji:"⏰"},
+    {action:"eat lunch at school",       time:"yesterday",   emoji:"🍱"},
+    {action:"play with a friend at recess",time:"yesterday", emoji:"😊"},
+    {action:"use the computer in class", time:"last week",   emoji:"💻"},
+    {action:"sing in music class",       time:"last week",   emoji:"🎵"},
+    {action:"do an experiment",          time:"last week",   emoji:"🔬"},
+    {action:"give a presentation",       time:"last week",   emoji:"📢"},
+    {action:"get a sticker from the teacher",time:"last week",emoji:"⭐"},
+    {action:"make a new friend",         time:"last month",  emoji:"👋"},
+    {action:"colour a worksheet",        time:"yesterday",   emoji:"🖍️"},
+    {action:"count in English",          time:"yesterday",   emoji:"🔢"},
+    {action:"spell a hard word",         time:"last week",   emoji:"🔤"},
+    {action:"do a group project",        time:"last week",   emoji:"👥"},
+    {action:"take part in PE",           time:"yesterday",   emoji:"🏃"},
+    {action:"pack your school bag",      time:"last night",  emoji:"🎒"},
+    {action:"be the class monitor",      time:"last week",   emoji:"📋"}
+  ],
+  home: [
+    {action:"make your bed",             time:"this morning",emoji:"🛏️"},
+    {action:"brush your teeth",          time:"this morning",emoji:"🦷"},
+    {action:"tidy your room",            time:"yesterday",   emoji:"🧹"},
+    {action:"help wash the dishes",      time:"last night",  emoji:"🍽️"},
+    {action:"take a shower",             time:"yesterday",   emoji:"🚿"},
+    {action:"watch TV with your family", time:"last night",  emoji:"📺"},
+    {action:"help cook dinner",          time:"last night",  emoji:"👨‍🍳"},
+    {action:"feed a pet",                time:"this morning",emoji:"🐾"},
+    {action:"take out the rubbish",      time:"yesterday",   emoji:"🗑️"},
+    {action:"water a plant",             time:"yesterday",   emoji:"🌱"},
+    {action:"fold your clothes",         time:"yesterday",   emoji:"👕"},
+    {action:"sweep the floor",           time:"yesterday",   emoji:"🧺"},
+    {action:"help carry the shopping",   time:"last weekend",emoji:"🛒"},
+    {action:"set the table for dinner",  time:"last night",  emoji:"🥄"},
+    {action:"video call a relative",     time:"last week",   emoji:"📱"},
+    {action:"read with your parents",    time:"last night",  emoji:"📗"},
+    {action:"play a board game",         time:"last weekend",emoji:"🎲"},
+    {action:"go to bed before 10pm",     time:"last night",  emoji:"😴"},
+    {action:"wake up without an alarm",  time:"this morning",emoji:"⏰"},
+    {action:"cook instant noodles",      time:"last week",   emoji:"🍜"},
+    {action:"fix something at home",     time:"last week",   emoji:"🔧"},
+    {action:"move furniture",            time:"last month",  emoji:"🪑"},
+    {action:"hang the laundry",          time:"yesterday",   emoji:"🧦"},
+    {action:"wipe the table",            time:"yesterday",   emoji:"🧽"}
+  ],
+  weekend: [
+    {action:"go to a shopping mall",     time:"last weekend",emoji:"🏬"},
+    {action:"visit Ocean Park",          time:"last year",   emoji:"🐬"},
+    {action:"ride the MTR",              time:"last weekend",emoji:"🚇"},
+    {action:"go to a dim sum restaurant",time:"last weekend",emoji:"🥟"},
+    {action:"visit a grandparent",       time:"last weekend",emoji:"👴"},
+    {action:"go to the beach",           time:"last month",  emoji:"🏖️"},
+    {action:"fly a kite",                time:"last month",  emoji:"🪁"},
+    {action:"go to a bookshop",          time:"last month",  emoji:"📚"},
+    {action:"watch a movie",             time:"last weekend",emoji:"🎬"},
+    {action:"eat out with your family",  time:"last weekend",emoji:"🍽️"},
+    {action:"play at the playground",    time:"last weekend",emoji:"🛝"},
+    {action:"go to a wet market",        time:"last weekend",emoji:"🐟"},
+    {action:"visit a museum",            time:"last month",  emoji:"🏛️"},
+    {action:"ride a tram",               time:"last month",  emoji:"🚃"},
+    {action:"play video games",          time:"last weekend",emoji:"🎮"},
+    {action:"draw or colour",            time:"last weekend",emoji:"🖍️"},
+    {action:"bake cookies",              time:"last month",  emoji:"🍪"},
+    {action:"sing karaoke",              time:"last month",  emoji:"🎤"},
+    {action:"go to a theme park",        time:"last year",   emoji:"🎡"},
+    {action:"visit a relative's home",   time:"last month",  emoji:"🏡"},
+    {action:"go swimming",               time:"last weekend",emoji:"🏊"},
+    {action:"do arts and crafts",        time:"last weekend",emoji:"✂️"},
+    {action:"stay up late",              time:"last weekend",emoji:"🌙"},
+    {action:"buy a new toy",             time:"last month",  emoji:"🧸"}
+  ],
+  mixed: [
+    {action:"eat rice for dinner",       time:"last night",  emoji:"🍚"},
+    {action:"play football",             time:"yesterday",   emoji:"⚽"},
+    {action:"do your homework",          time:"last night",  emoji:"📝"},
+    {action:"make your bed",             time:"this morning",emoji:"🛏️"},
+    {action:"go to a shopping mall",     time:"last weekend",emoji:"🏬"},
+    {action:"drink milk",                time:"this morning",emoji:"🥛"},
+    {action:"swim",                      time:"last weekend",emoji:"🏊"},
+    {action:"read a book",               time:"yesterday",   emoji:"📚"},
+    {action:"watch TV with your family", time:"last night",  emoji:"📺"},
+    {action:"eat dim sum",               time:"last weekend",emoji:"🥟"},
+    {action:"help wash the dishes",      time:"last night",  emoji:"🍽️"},
+    {action:"ride a bicycle",            time:"last weekend",emoji:"🚲"},
+    {action:"draw a picture",            time:"yesterday",   emoji:"🎨"},
+    {action:"tidy your room",            time:"yesterday",   emoji:"🧹"},
+    {action:"go to the park",            time:"last weekend",emoji:"🌳"},
+    {action:"eat instant noodles",       time:"last week",   emoji:"🍜"},
+    {action:"play at the playground",    time:"last weekend",emoji:"🛝"},
+    {action:"brush your teeth",          time:"this morning",emoji:"🦷"},
+    {action:"answer a question in class",time:"yesterday",   emoji:"🙋"},
+    {action:"visit a grandparent",       time:"last weekend",emoji:"👴"},
+    {action:"jump rope",                 time:"yesterday",   emoji:"🪢"},
+    {action:"play basketball",           time:"yesterday",   emoji:"🏀"},
+    {action:"eat bread for breakfast",   time:"this morning",emoji:"🍞"},
+    {action:"ride the MTR",              time:"last weekend",emoji:"🚇"}
+  ]
+};
+
+// ── GAME STATE ─────────────────────────────────────────────────────
+let playerName = '';
+let selectedPresetKey = '';
+let cells = []; // array of {action, time, emoji, stamped, name, isFree}
+let activeCell = null;
+let winAchieved = false;
+
+function selectPreset(key, btn) {
+  selectedPresetKey = key;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('preset-hint').textContent = '✓ Topic selected! Enter your name and play.';
+  document.getElementById('preset-hint').style.color = '#06d6a0';
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  const nameVal = document.getElementById('player-name').value.trim();
+  if (!nameVal) {
+    shakeEl(document.getElementById('player-name'));
+    return;
+  }
+  if (!selectedPresetKey) {
+    shakeEl(document.querySelector('.preset-grid'));
+    document.getElementById('preset-hint').textContent = '⚠️ Please pick a topic first!';
+    document.getElementById('preset-hint').style.color = '#e05a1e';
+    return;
+  }
+
+  playerName = nameVal;
+  winAchieved = false;
+
+  const items = shuffle(PRESETS[selectedPresetKey]).slice(0, 24);
+
+  cells = [];
+  let pi = 0;
+  for (let i=0; i<25; i++) {
+    if (i===12) {
+      cells.push({ action:'FREE', time:'', emoji:'⭐', stamped:true, name:'FREE', isFree:true });
+    } else {
+      const item = items[pi++];
+      cells.push({ ...item, stamped:false, name:'', isFree:false });
+    }
+  }
+
+  renderGame();
+  showScreen('game-screen');
+}
+
+function renderGame() {
+  document.getElementById('header-name').textContent = playerName;
+  updateScore();
+
+  const grid = document.getElementById('bingo-grid');
+  grid.innerHTML = '';
+
+  cells.forEach((cell, idx) => {
+    const div = document.createElement('div');
+    div.className = 'bingo-cell' + (cell.isFree ? ' free-cell' : '') + (cell.stamped && !cell.isFree ? ' stamped' : '');
+    div.dataset.idx = idx;
+
+    if (cell.stamped && !cell.isFree) {
+      div.innerHTML = `
+        <div class="stamp-overlay">
+          <span class="stamp-tick">✅</span>
+          <span class="stamp-name">${escHtml(cell.name)}</span>
+        </div>`;
+    } else if (cell.isFree) {
+      div.innerHTML = `<span class="emoji">⭐</span><span class="cell-hint">FREE</span>`;
+    } else {
+      // Show: action on top, (time) below in brackets — NO full sentence
+      div.innerHTML = `
+        <span class="emoji">${cell.emoji}</span>
+        <span class="cell-action">${escHtml(cell.action)}</span>
+        <span class="cell-time">(${escHtml(cell.time)})</span>`;
+    }
+
+    if (!cell.isFree) {
+      div.addEventListener('click', () => openModal(idx));
+    }
+
+    grid.appendChild(div);
+  });
+
+  highlightWinningLines();
+}
+
+function updateScore() {
+  const stamped = cells.filter(c=>c.stamped).length - 1; // minus FREE
+  document.getElementById('score-display').textContent = stamped + ' ✓';
+}
+
+function openModal(idx) {
+  if (winAchieved) return;
+  activeCell = idx;
+  const cell = cells[idx];
+  document.getElementById('modal-emoji').textContent = cell.emoji;
+  // Show the full question students should SAY OUT LOUD
+  document.getElementById('modal-phrase').textContent =
+    cell.action + ' (' + cell.time + ')';
+  document.getElementById('name-input').value = '';
+  document.getElementById('modal-backdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('name-input').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+  activeCell = null;
+}
+
+function confirmName() {
+  const val = document.getElementById('name-input').value.trim();
+  if (!val) {
+    shakeEl(document.getElementById('name-input'));
+    return;
+  }
+  cells[activeCell].stamped = true;
+  cells[activeCell].name = val;
+  closeModal();
+  renderGame();
+
+  if (!winAchieved && checkWin()) {
+    winAchieved = true;
+    setTimeout(showWin, 400);
+  }
+}
+
+// ── WIN CHECK ──────────────────────────────────────────────────────
+function getWinningLines() {
+  const lines = [];
+  // rows
+  for (let r=0;r<5;r++) lines.push([r*5,r*5+1,r*5+2,r*5+3,r*5+4]);
+  // cols
+  for (let c=0;c<5;c++) lines.push([c,c+5,c+10,c+15,c+20]);
+  // diagonals
+  lines.push([0,6,12,18,24]);
+  lines.push([4,8,12,16,20]);
+  return lines;
+}
+
+function checkWin() {
+  return getWinningLines().some(line => line.every(i => cells[i].stamped));
+}
+
+function highlightWinningLines() {
+  const grid = document.getElementById('bingo-grid');
+  const cellDivs = grid.querySelectorAll('.bingo-cell');
+  cellDivs.forEach(d=>d.classList.remove('winning'));
+
+  getWinningLines().forEach(line => {
+    if (line.every(i=>cells[i].stamped)) {
+      line.forEach(i=>cellDivs[i]?.classList.add('winning'));
+    }
+  });
+}
+
+// ── WIN SCREEN ─────────────────────────────────────────────────────
+function showWin() {
+  launchConfetti();
+  document.getElementById('win-sub-text').textContent =
+    `Great job, ${playerName}! 🌟 You spoke to so many classmates!`;
+
+  // Build teacher-check grid
+  const wg = document.getElementById('win-grid');
+  wg.innerHTML = '';
+  cells.forEach(cell => {
+    const d = document.createElement('div');
+    d.className = 'win-cell' + (cell.stamped ? ' filled' : '');
+    if (cell.isFree) {
+      d.innerHTML = `<div class="wc-free">⭐</div><div class="wc-phrase">FREE</div>`;
+    } else if (cell.stamped) {
+      d.innerHTML = `<div class="wc-name">${escHtml(cell.name)}</div><div class="wc-phrase">${escHtml(cell.action)}<br><span style="color:#06d6a0">(${escHtml(cell.time)})</span></div>`;
+    } else {
+      d.innerHTML = `<div style="font-size:1rem">—</div><div class="wc-phrase">${escHtml(cell.action)}</div>`;
+    }
+    wg.appendChild(d);
+  });
+
+  showScreen('win-screen');
+}
+
+function resetToSetup() {
+  document.getElementById('confetti-container').innerHTML = '';
+  showScreen('setup-screen');
+}
+
+// ── CONFETTI ───────────────────────────────────────────────────────
+function launchConfetti() {
+  const container = document.getElementById('confetti-container');
+  container.innerHTML = '';
+  const colors = ['#ff6b35','#ffd166','#06d6a0','#7b5ea7','#118ab2','#ef476f'];
+  for (let i=0;i<80;i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${6+Math.random()*8}px;
+      height:${6+Math.random()*8}px;
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+      animation-duration:${1.5+Math.random()*2}s;
+      animation-delay:${Math.random()*0.8}s;
+    `;
+    container.appendChild(p);
+  }
+  setTimeout(()=>{ container.innerHTML=''; }, 4000);
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function shakeEl(el) {
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  setTimeout(()=>el.classList.remove('shake'), 400);
+}
+</script>
+</body>
+</html>
